@@ -46,18 +46,13 @@
             </v-container>
         </div>
         <v-container class="mt-n16">
-            <v-card class="mb-4 text-center">
-                <v-card-title>
-                    Analisis Followers
-                    <v-spacer/>
-                    0/20
-                    <v-btn class="ml-2">Tambang</v-btn>
-                    <v-btn class="ml-2">Analisis</v-btn>
-                </v-card-title>
-                <v-progress-linear value="80"></v-progress-linear>
-            </v-card>
+            <v-tabs v-model="tab">
+                <v-tab>Analisis Umum</v-tab>
+                <v-tab>Analisis Followers</v-tab>
+            </v-tabs>
             
-            <v-card class="mb-4 d-flex align-items-center pr-2" style="align-items:center">
+            <template v-if="tab==0">
+                <v-card class="mb-4 mt-4 d-flex align-items-center pr-2" style="align-items:center">
                     <div>
                         <v-card-title>
                             Influencer Score
@@ -223,11 +218,10 @@
                     </div>
                 </v-card>
                 <v-card class="mb-4">
+                    <v-card-title>
+                        Most Used Hashtag
+                    </v-card-title>
                     <v-card-text>
-                        <v-card-title>
-                            Most Used Hashtag
-                        </v-card-title>
-                        
                         <vue-word-cloud
                             style="
                                 height: 480px;
@@ -239,30 +233,105 @@
                     </v-card-text>
                 </v-card>
             
-            <!-- <v-tabs class="mb-4 mt-4" v-model="tab">
-                <v-tab>Followers</v-tab>
-                <v-tab>Analisis Followers</v-tab>
-            </v-tabs>
-            <v-tabs-items v-model="tab">
-                <v-tab-item>
-                
-            </v-tab-item>
-        </v-tabs-items> -->
-            <!-- <div class="mt-2 mt-n8">
-                <v-col>
+            </template>
+            <template v-else>
+                <v-card class="mb-4 mt-4 text-center">
+                    <v-card-title>
+                        #1 Mining Followers
+                        <v-spacer/>
+                        {{ followersMined }}/{{ user.edge_followed_by.count }}
+                        <v-btn @click="startMiningFollowers" class="ml-2">Tambang</v-btn>
+                        <v-btn @click="checkStatusMiningFollowers" class="ml-2">Check</v-btn>
+                    </v-card-title>
+                    <v-progress-linear :value="followersMined/user.edge_followed_by.count*100"></v-progress-linear>
+                </v-card>
+                <v-card class="mb-4 text-center">
+                    <v-card-title>
+                        #2 Mining Content all followers
+                        <v-spacer/>
+                        {{ postsMined }}/{{ user.edge_followed_by.count }}
+                        <v-btn @click="startMiningPosts" class="ml-2">Tambang</v-btn>
+                        <v-btn @click="checkStatusMiningPosts" class="ml-2">Check</v-btn>
+                    </v-card-title>
+                    <v-progress-linear :value="postsMined/user.edge_followed_by.count*100"></v-progress-linear>
+                </v-card>
+                <v-btn @click="handelAnalisisFollowers" block>View Data</v-btn>
+                <template v-if="followers.mention">
+                    <v-card class="mb-4 mt-4">
+                        <v-card-title>
+                            Most Used Hashtag by followers
+                        </v-card-title>
+                        <v-card-text>
+                            <vue-word-cloud
+                                style="
+                                    height: 480px;
+                                    width: 100%;"
+                                :words="followersHashtag"
+                                :color="([, weight]) => weight > 10 ? 'DeepPink' : weight > 5 ? 'RoyalBlue' : 'Indigo'"
+                                font-family="Roboto"/>
+                        
+                        </v-card-text>
+                    </v-card>
+                    <v-card class="mb-4">
+                        <v-card-title>
+                            Followers Activity
+                        </v-card-title>
+                        <v-card-text>
+                            <calendar-heatmap 
+                                :values="[{ date: '2022-8-1', count: 6 }]"
+                                :end-date="'2022-8-10'"/>
+                            <!-- <vue-chart-heatmap></vue-chart-heatmap> -->
+                        
+                        </v-card-text>
+                    </v-card>
+                    <v-card class="mb-4 pr-2">
+                        <div>
+                            <v-card-title>
+                                People Mention By Folowers
+                            </v-card-title>
+                            <v-list dense class="py-0">
+                                <template
+                                    v-for="(item, index) in followers.mention.buckets">
+                                    <v-list-item
+                                        :key="index">
+                                        <v-list-item-content>
+                                            <v-list-item-title>{{ item.key }}</v-list-item-title>
+                                            <v-progress-linear :value="item.doc_count/user.imention.buckets[0].doc_count*100"></v-progress-linear>
+                                        </v-list-item-content>
+                                        <v-list-item-action>
+                                            <v-list-item-action-text>{{ item.doc_count }}</v-list-item-action-text>
+                                        </v-list-item-action>
+                                    </v-list-item>
+                                    <v-divider
+                                        :key="`line-${index}`"/>
+                                </template>
+                            </v-list>
+                        </div>
+                    </v-card>
                     
-                </v-col>
-                <v-col>
-                    <p>Analisis Follower</p>
-                </v-col>
-            </div> -->
+                </template>
+                <v-card class="mb-4 text-center mt-4">
+                    <v-card-title>
+                        #3 Analisis Gambar Postingan
+                        <v-spacer/>
+                        {{ postsMined }}/{{ user.edge_followed_by.count }}
+                        <v-btn @click="startMiningPosts" class="ml-2">Tambang</v-btn>
+                        <v-btn @click="checkStatusMiningPosts" class="ml-2">Check</v-btn>
+                    </v-card-title>
+                    <v-progress-linear :value="postsMined/user.edge_followed_by.count*100"></v-progress-linear>
+                </v-card>
+            </template>
         </v-container>
     </div>
 </template>
 <script>
 import VueWordCloud from 'vuewordcloud';
+import { CalendarHeatmap } from 'vue-calendar-heatmap'
 export default {
-    components: {[VueWordCloud.name]: VueWordCloud,},
+    components: {
+        [VueWordCloud.name]: VueWordCloud,
+        CalendarHeatmap,
+    },
     layout:'apps',
 	props: ['apps', 'tipe', 'handelKeluar', 'aesEncrypt', 'aesDecrypt', 'setFetching', 'setSnackbar'],
     computed:{
@@ -335,7 +404,15 @@ export default {
         hashtag: function(){
             let result = []
 
-            this.user.imention.buckets.map((item)=>{
+            this.user.hash.buckets.map((item)=>{
+                result.push([item.key, item.doc_count])
+            })
+            // result.push(['romance', 19])
+            return result
+        },
+        followersHashtag: function(){
+            let result = []
+            this.followers.hash.buckets.map((item)=>{
                 result.push([item.key, item.doc_count])
             })
             // result.push(['romance', 19])
@@ -352,6 +429,35 @@ export default {
     data: function(){
         return {
             tab: 0,
+            followersMined: 0,
+            postsMined: 0,
+            followers: {}
+        }
+    },
+    mounted: function(){
+        this.checkStatusMiningFollowers()
+        this.checkStatusMiningPosts()
+        // setInterval(this.checkStatusMiningFollowers, 2000)
+    },
+    methods:{
+        startMiningFollowers: function(){
+            this.$api.$get(`/mining/followers/${this.username}/${this.user.id}`).then((response)=>{
+                console.log(response)
+            })
+        },
+        checkStatusMiningFollowers: async function(){
+            this.followersMined = (await this.$api.$get(`/mining/followers-status/${this.username}`)).value
+        },
+        startMiningPosts: function(){
+            this.$api.$get(`/mining/posts/${this.username}/${this.user.id}`).then((response)=>{
+                console.log(response)
+            })
+        },
+        checkStatusMiningPosts: async function(){
+            this.postsMined = (await this.$api.$get(`/mining/posts-status/${this.username}`)).total
+        },
+        handelAnalisisFollowers: async function(){
+            this.followers = (await this.$api.$get(`/followers/info/${this.username}`))
         }
     }
 }
